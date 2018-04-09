@@ -11,68 +11,43 @@
 #include <grp.h>
 #include <time.h>
 
+bool isLOption(int argc, char *argv[]);
+char *  getDir(int argCount, bool lOption, char *argv[]);
+void printDirStats(DIR *dp, bool lOption, char *dir);
+
 int main(int argc, char *argv[]){
-	struct stat sb;
 	bool lOption = false;
-	int c;	
 	DIR *dp;
-	struct dirent *d;	
-	int argCount = argc;
-	struct passwd *pw;
-	struct group *gr;
-	struct tm *timeMod;
-	char buf[120];
-	char path[257];
+	char *dir;
+
 	if(argc > 3){
 		fprintf(stderr, "TOO MANY ARGUMENTS\n");
 		exit(EXIT_FAILURE);
 	}	
 	
+	lOption = isLOption(argc, argv);
+	dir = getDir(argc, lOption, argv);	
+	dp = opendir(dir);	
+	printDirStats(dp, lOption, dir);	
+	closedir(dp);
+	return 0;
+}
 
-	while(argc > 1 && --argc > 0 && (*++argv)[0] == '-'){
-		while((c = *++argv[0])){  
-			if(c == 'l'){
-				lOption = true;
-			}
-		
-			else{
-				fprintf(stderr, "Usage: -l\n");
-				exit(EXIT_FAILURE);
-			}
-		}
-	}	
-	printf("%s\n", *argv);	
-	if(argCount == 1 || (argCount == 2 && lOption == true)){
-		dp = opendir(".");
-		assert(dp != NULL);
-	}
+void printDirStats(DIR *dp, bool lOption, char *dir){
+	struct stat sb;
+	char path[280];
+	struct passwd *pw;
+	struct group *gr;
+	struct tm *timeMod;
+	struct dirent *d;
+	char buf[120];
 
-	else if(argCount == 2 && lOption == false){
-		if(stat(*argv, &sb) == -1){
-			perror("stat");
-		exit(EXIT_FAILURE);			
-		}
-		printf("%s\n",*argv);
-		dp = opendir(*argv);
-	}
-
-	else if(argCount  == 3 && lOption == true)
-	{
-		if(stat(*argv, &sb) == -1){
-			perror("stat");
-			exit(EXIT_FAILURE);
-		}
-
-		dp = opendir(*argv);
-	}
-	
 	while((d = readdir(dp)) != NULL){
-		sprintf(path, "%s/%s", *argv, d->d_name);
+		sprintf(path, "%s/%s", dir, d->d_name);
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 		       continue;
 		if(stat(path, &sb) == -1)
 		{
-			printf("reading\n");			
 			perror("stat");
 			exit(EXIT_FAILURE);
 		}	
@@ -102,9 +77,53 @@ int main(int argc, char *argv[]){
 			printf("%s\n", d->d_name);
 		}
 	}		
-	closedir(dp);
-	return 0;
 }
 
+char * getDir( int argCount, bool lOption, char *argv[]){
+	char *dir;	
+	struct stat sb;	
+	if(argCount == 1 || (argCount == 2 && lOption == true)){
+		dir = ".";	
+	}
+
+	else if(argCount == 2 && lOption == false){
+		dir = argv[1];
+		if(stat(argv[1], &sb) == -1){
+			perror("stat");
+			exit(EXIT_FAILURE);			
+		}
+	}
+
+	else if(argCount  == 3 && lOption == true)
+	{
+		dir = argv[2];
+		if(stat(argv[2], &sb) == -1){
+			perror("stat");
+			exit(EXIT_FAILURE);
+		}
+
+		
+	}
+	return dir;
+}
+
+
+bool isLOption(int argc, char *argv[]){
+	
+	int c;
+	while(argc > 1 && --argc > 0 && (*++argv)[0] == '-'){
+		while((c = *++argv[0])){  
+			if(c == 'l'){
+				return true;
+			}
+		
+			else{
+				fprintf(stderr, "Usage: -l\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+	}	
+	return false;
+}
 
 
