@@ -14,6 +14,7 @@
 bool isLOption(int argc, char *argv[]);
 char *  getDir(int argCount, bool lOption, char *argv[]);
 void printDirStats(DIR *dp, bool lOption, char *dir);
+void printPermissions(mode_t mode);
 
 int main(int argc, char *argv[]){
 	bool lOption = false;
@@ -50,18 +51,9 @@ void printDirStats(DIR *dp, bool lOption, char *dir){
 		{
 			perror("stat");
 			exit(EXIT_FAILURE);
-		}	
+		}
 		if(lOption == true){
-			putchar( (S_ISDIR(sb.st_mode)) ? 'd' : '-');
-			putchar((sb.st_mode & S_IRUSR) ? 'r' : '-');
-			putchar((sb.st_mode & S_IWUSR) ? 'w' : '-');
-			putchar((sb.st_mode & S_IXUSR) ? 'x' : '-');
-			putchar((sb.st_mode & S_IRGRP) ? 'r' : '-');
-			putchar((sb.st_mode & S_IWGRP) ? 'w' : '-');
-			putchar((sb.st_mode & S_IXGRP) ? 'x' : '-');
-			putchar((sb.st_mode & S_IROTH) ? 'r' : '-');
-			putchar((sb.st_mode & S_IWOTH) ? 'w' : '-');
-			putchar((sb.st_mode & S_IXOTH) ? 'x' : '-');
+			printPermissions(sb.st_mode);
 			
 			pw = getpwuid(sb.st_uid);
 			gr = getgrgid(sb.st_gid);
@@ -77,6 +69,20 @@ void printDirStats(DIR *dp, bool lOption, char *dir){
 			printf("%s\n", d->d_name);
 		}
 	}		
+}
+ 
+void printPermissions(mode_t mode){
+
+		putchar( (S_ISDIR(mode)) ? 'd' : '-');
+		putchar((mode & S_IRUSR) ? 'r' : '-');
+		putchar((mode & S_IWUSR) ? 'w' : '-');
+		putchar((mode & S_IXUSR) ? 'x' : '-');
+		putchar((mode & S_IRGRP) ? 'r' : '-');
+		putchar((mode & S_IWGRP) ? 'w' : '-');			
+		putchar((mode & S_IXGRP) ? 'x' : '-');
+		putchar((mode & S_IROTH) ? 'r' : '-');
+		putchar((mode & S_IWOTH) ? 'w' : '-');
+		putchar((mode & S_IXOTH) ? 'x' : '-');
 }
 
 char * getDir( int argCount, bool lOption, char *argv[]){
