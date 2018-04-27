@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
 
 	while(fgets(buffer, MAXLINE, fp) != 0){
 		prevChar = buffer[0];
-		while(counter < strlen(buffer) || buffer[counter] == EOF){
+		while(counter < strlen(buffer)){  
 			if(buffer[counter] == '\n'){
 				printf("%c", buffer[counter]);
 				counter++;
